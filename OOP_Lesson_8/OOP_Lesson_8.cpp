@@ -84,15 +84,8 @@ void task_2()
 // и перехватывающую все исключения от его методов, а также выводящую подробную информацию о всех возникающих ошибках.
 //
 
-class OffTheField
-{
 
-};
 
-class IllegalCommand
-{
-
-};
 
 template <class T>
 class Coords
@@ -108,6 +101,28 @@ public:
 	void setCoords(T x, T y) { m_x = x; m_y = y; }
 	void incX(T dx) { m_x += dx; }
 	void incY(T dy) { m_y += dy; }
+};
+
+
+class OffTheField
+{
+private:
+	Coords<int> m_coords;
+public:
+	OffTheField(Coords<int>& coords) : m_coords(coords) { }
+	const Coords<int>& getError() const
+	{
+		return m_coords;
+	}
+};
+
+class IllegalCommand
+{
+private:
+	int m_cmd;
+public:
+	IllegalCommand(int cmd) : m_cmd(cmd) { }
+	int getError() { return m_cmd; }
 };
 
 
@@ -139,11 +154,11 @@ public:
 			m_coords.incX(1);
 			break;
 		default:
-			throw IllegalCommand();
+			throw IllegalCommand(static_cast<int>(direction));
 			break;
 		}
 		if (m_coords.getX() > m_maxX-1 || m_coords.getX() < m_minX ||  m_coords.getY() > m_maxY-1 || m_coords.getY() < m_minY)
-			throw OffTheField();
+			throw OffTheField(m_coords);
 			
 	}
 	const Coords<int>& getCoords() const
@@ -170,61 +185,26 @@ void task_3()
 
 	try
 	{
-		cout << "Moving up..." << endl;
-		int i = 10;
+		cout << "Moving..." << endl;
+		int i = 10; // >10 для исключения
 		while (--i)
 		{
 			robot.move(eDirection::UP); robot.printCoords();
+			//robot.move(eDirection::DOWN); robot.printCoords();
+			//robot.move(eDirection::LEFT); robot.printCoords();
+			//robot.move(eDirection::RIGHT); robot.printCoords();
 		}
+		robot.move(static_cast<eDirection>(100));  //тест неправильной команды
 	}
 	catch (OffTheField& otf)
 	{
-		cerr << "Error!" << endl;
+		cerr << "Error! Coords " << "X: " << otf.getError().getX() << ", Y: " << otf.getError().getY() << endl;
+	}
+	catch (IllegalCommand& ic)
+	{
+		cerr << "Error! Illegal comand: " << ic.getError() << endl;
 	}
 
-	try
-	{
-		cout << endl << "Moving down..." << endl;
-		int i = 10;
-
-		while (--i)
-		{
-			robot.move(eDirection::DOWN); robot.printCoords();
-		}
-	}
-	catch (OffTheField& otf)
-	{
-		cerr << "Error!" << endl;
-	}
-	try
-	{
-		cout << endl << "Moving right..." << endl;
-		int i = 10;
-
-		while (--i)
-		{
-			robot.move(eDirection::RIGHT); robot.printCoords();
-		}
-	}
-	catch (OffTheField& otf)
-	{
-		cerr << "Error!" << endl;
-	}
-
-	try
-	{
-		cout << endl << "Moving left..." << endl;
-		int i = 10;
-
-		while (--i)
-		{
-			robot.move(eDirection::LEFT); robot.printCoords();
-		}
-	}
-	catch (OffTheField& otf)
-	{
-		cerr << "Error!" << endl;
-	}
 }
 
 int main()
