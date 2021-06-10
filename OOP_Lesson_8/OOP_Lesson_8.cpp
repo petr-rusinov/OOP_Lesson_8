@@ -6,25 +6,37 @@ using namespace std;
 // и запускать исключение DivisionByZero, если второй параметр равен 0. 
 // В функции main выводить результат вызова функции div в консоль, а также ловить исключения.
 
-#define DivisionByZero 1
+
+class DivisionByZero
+{
+private:
+	string m_errString;
+public:
+	DivisionByZero() : m_errString("Division by Zero") { }
+	const string& getError() const { return m_errString; }
+};
 
 template <class T>
 T _div(T first, T second)
 {
 	if (second == 0)
-		throw (DivisionByZero);
+		throw DivisionByZero();
 	return first / second;
 }
 
 void task_1()
 {
+	cout << "------- TASK 1 -------" << endl;
 	try
 	{
-		double result = _div<double>(2.2, 0);
+		double result = _div<double>(2.2, 1);
+		cout << "Result: " << result << endl;
+		result = _div<double>(2.2, 0);
+		cout << "Result: " << result << endl;
 	}
-	catch (int a)
+	catch (DivisionByZero& a)
 	{
-		cerr << "Error: " << a << endl;
+		cerr << "Error: " << a.getError() << endl;
 	}
 }
 
@@ -63,16 +75,25 @@ public:
 
 void task_2()
 {
+	cout << "------- TASK 2 -------" << endl;
 	Bar b;
-	try
+	int n = 0;
+	do
 	{
-		b.set(10);
-		b.set(100);
-	}
-	catch (Ex& ex)
-	{
-		cerr << ex.getError() << endl;
-	}
+		cout << "Enter the number, 0 to exit: ";
+		cin >> n;
+		try
+		{
+			b.set(n);
+		}
+		catch (Ex& ex)
+		{
+			cerr << "Error: " << ex.getError() << endl;
+		}
+
+	} while (n);
+
+
 }
 
 // 3.
@@ -102,18 +123,41 @@ public:
 	void incX(T dx) { m_x += dx; }
 	void incY(T dy) { m_y += dy; }
 };
-
+enum class eDirection { UP, DOWN, LEFT, RIGHT };
+ostream& operator << (ostream& out, eDirection d)
+{
+	switch (d)
+	{
+	case eDirection::UP:
+		out << "UP";
+		break;
+	case eDirection::DOWN:
+		out << "DOWN";
+		break;
+	case eDirection::LEFT:
+		out << "LEFT";
+		break;
+	case eDirection::RIGHT:
+		out << "RIGHT";
+		break;
+	default:
+		break;
+	}
+	return out;
+}
 
 class OffTheField
 {
 private:
 	Coords<int> m_coords;
+	eDirection m_dir;
 public:
-	OffTheField(Coords<int>& coords) : m_coords(coords) { }
-	const Coords<int>& getError() const
+	OffTheField(Coords<int>& coords, eDirection dir) : m_coords(coords), m_dir(dir) { }
+	const Coords<int>& getCoords() const
 	{
 		return m_coords;
 	}
+	const eDirection getDir() const { return m_dir; }
 };
 
 class IllegalCommand
@@ -126,7 +170,7 @@ public:
 };
 
 
-enum class eDirection { UP, DOWN, LEFT, RIGHT };
+
 class Robot
 {
 private:
@@ -158,7 +202,7 @@ public:
 			break;
 		}
 		if (m_coords.getX() > m_maxX-1 || m_coords.getX() < m_minX ||  m_coords.getY() > m_maxY-1 || m_coords.getY() < m_minY)
-			throw OffTheField(m_coords);
+			throw OffTheField(m_coords, direction);
 			
 	}
 	const Coords<int>& getCoords() const
@@ -182,10 +226,10 @@ void task_3()
 	Coords<int> c(0, 0);
 	robot.setCoords(c);
 	Coords<int> cc = robot.getCoords();
-
+	cout << "------- TASK 3 -------" << endl;
 	try
 	{
-		cout << "Moving..." << endl;
+		cout << "Robot moving..." << endl;
 		int i = 10; // >10 для исключения
 		while (--i)
 		{
@@ -198,7 +242,7 @@ void task_3()
 	}
 	catch (OffTheField& otf)
 	{
-		cerr << "Error! Coords " << "X: " << otf.getError().getX() << ", Y: " << otf.getError().getY() << endl;
+		cerr << "Error! Coords " << "X: " << otf.getCoords().getX() << ", Y: " << otf.getCoords().getY() << ", Direction: " << otf.getDir() << endl;
 	}
 	catch (IllegalCommand& ic)
 	{
@@ -209,8 +253,8 @@ void task_3()
 
 int main()
 {
-	//task_1();
-	//task_2();
+	task_1();
+	task_2();
 	task_3();
 
 }
